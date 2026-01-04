@@ -4,5 +4,11 @@ import { LoginPayload, LoginResponse } from "../types";
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   const response = await authClient.post<LoginResponse>("/login", payload);
-  return response.data;
+  return {
+    ...response.data,
+    user: {
+      ...response.data.user,
+      role: response.data.user.role || "USER",
+    },
+  };
 }
