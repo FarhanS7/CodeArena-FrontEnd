@@ -44,13 +44,13 @@ export function LandingNavbar() {
 
   if (!isMounted) {
     return (
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-transparent bg-transparent h-16" />
+      <nav className="sticky top-0 left-0 right-0 z-50 border-b border-transparent bg-transparent h-16" />
     );
   }
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${
+      className={`sticky top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${
         scrolled
           ? "bg-white/70 dark:bg-[#0B0E14]/70 backdrop-blur-xl border-slate-200 dark:border-white/5 shadow-sm"
           : "bg-transparent border-transparent"

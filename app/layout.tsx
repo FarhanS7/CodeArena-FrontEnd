@@ -1,3 +1,4 @@
+import { DevelopmentBanner } from "@/components/common/DevelopmentBanner";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import type { Metadata } from "next";
@@ -30,6 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
+          <DevelopmentBanner />
           {children}
           <Toaster />
         </AuthProvider>
