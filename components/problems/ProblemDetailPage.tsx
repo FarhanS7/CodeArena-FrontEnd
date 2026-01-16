@@ -10,9 +10,10 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useSocket } from "@/features/hooks/useSocket";
 import { fetchProblemById } from "@/features/problems/api";
 import type { ProblemDetail } from "@/features/problems/types";
-import { createSubmission, fetchSubmissionById } from "@/features/submissions/api";
+import { createSubmission } from "@/features/submissions/api";
 import { Submission } from "@/features/submissions/types";
 import {
     AlertCircle,
@@ -25,7 +26,7 @@ import {
     Settings2
 } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CodeEditor } from "./CodeEditor";
 import { SubmissionStatusDisplay } from "./SubmissionStatusDisplay";
@@ -52,7 +53,42 @@ export function ProblemDetailPage() {
   // Submission State
   const [currentSubmission, setCurrentSubmission] = useState<Submission | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Real-time updates via Socket.io
+  const { on, off } = useSocket(user?.id);
+
+  useEffect(() => {
+    on("submission-update", (data: Submission) => {
+      console.log("Received submission update via WebSocket:", data);
+      
+      // Update the current submission ONLY if it's the one we're currently tracking
+      // or if it's a new one and we don't have one current.
+      // Usually, we only care about the latest one the user submitted in this session.
+      setCurrentSubmission(prev => {
+        if (!prev || prev.id === data.id) {
+          return data;
+        }
+        return prev;
+      });
+
+      const isFinished = data.status !== "PENDING" && 
+                        data.status !== "QUEUED" && 
+                        data.status !== "PROCESSING";
+
+      if (isFinished && data.id === currentSubmission?.id) {
+        setIsSubmitting(false);
+        if (data.status === "ACCEPTED") {
+          toast.success("Success! All test cases passed.");
+        } else {
+          toast.error(`Submission failed: ${data.status.replace("_", " ")}`);
+        }
+      }
+    });
+
+    return () => {
+      off("submission-update");
+    };
+  }, [on, off, currentSubmission?.id]);
 
   useEffect(() => {
     const load = async () => {
@@ -82,45 +118,11 @@ export function ProblemDetailPage() {
     load();
   }, [params]);
 
-  // Clean up polling on unmount
-  useEffect(() => {
-    return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-    };
-  }, []);
 
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
     const selected = LANGUAGES.find(l => l.id === value);
     if (selected) setCode(selected.defaultCode);
-  };
-
-  const startPolling = (submissionId: number) => {
-    if (pollingRef.current) clearInterval(pollingRef.current);
-    
-    pollingRef.current = setInterval(async () => {
-      try {
-        const sub = await fetchSubmissionById(submissionId);
-        setCurrentSubmission(sub);
-        
-        const isFinished = sub.status !== "PENDING" && 
-                          sub.status !== "QUEUED" && 
-                          sub.status !== "PROCESSING";
-        
-        if (isFinished) {
-          if (pollingRef.current) clearInterval(pollingRef.current);
-          setIsSubmitting(false);
-          
-          if (sub.status === "ACCEPTED") {
-            toast.success("Success! All test cases passed.");
-          } else {
-            toast.error(`Submission failed: ${sub.status.replace("_", " ")}`);
-          }
-        }
-      } catch (err) {
-        console.error("Polling error", err);
-      }
-    }, 2000);
   };
 
   const handleSubmit = async () => {
@@ -138,7 +140,7 @@ export function ProblemDetailPage() {
       });
       
       setCurrentSubmission(sub);
-      startPolling(sub.id);
+      // Removed startPolling(sub.id) - WebSocket will handle it
       toast.info("Submission received, processing...");
     } catch (err) {
       console.error("Submission error", err);
