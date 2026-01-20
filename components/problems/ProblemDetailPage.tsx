@@ -20,6 +20,7 @@ import {
     ChevronRight,
     Info,
     Loader2,
+    MessageSquare,
     Play,
     RotateCcw,
     Send,
@@ -31,6 +32,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AiHintPanel } from "./AiHintPanel";
 import { CodeEditor } from "./CodeEditor";
+import { CommentSection } from "./CommentSection";
 import { SubmissionStatusDisplay } from "./SubmissionStatusDisplay";
 
 const LANGUAGES = [
@@ -58,6 +60,9 @@ export function ProblemDetailPage() {
 
   // AI Hint State
   const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
+
+  // Tabs State
+  const [activeTab, setActiveTab] = useState<"description" | "discussion" | "submissions">("description");
 
   // Real-time updates via Socket.io
   const { on, off } = useSocket(user?.id);
@@ -222,43 +227,91 @@ export function ProblemDetailPage() {
 
       {/* Main Split Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel: Description */}
-        <div className="w-[40%] border-r border-slate-800 overflow-y-auto bg-slate-950/50 p-6 custom-scrollbar">
-          <div className="space-y-8 pb-12">
-            <div className="prose prose-invert prose-sm max-w-none">
-              <div className="flex items-center gap-2 text-slate-400 mb-4 font-bold text-xs uppercase tracking-wider">
-                <Info className="w-3 h-3" />
-                Problem Description
-              </div>
-              <p className="whitespace-pre-line text-slate-200 leading-relaxed text-sm">
-                {problem.description}
-              </p>
-            </div>
+        {/* Left Panel: Description & Discussion */}
+        <div className="w-[45%] border-r border-slate-800 flex flex-col bg-slate-950/50">
+          {/* Tab Headers */}
+          <div className="flex items-center gap-6 px-6 border-b border-slate-900 bg-slate-950/20">
+            <button 
+              onClick={() => setActiveTab("description")}
+              className={`py-3 text-xs font-bold uppercase tracking-widest transition-all border-b-2 ${
+                activeTab === "description" ? "text-amber-500 border-amber-500" : "text-slate-500 border-transparent hover:text-slate-300"
+              }`}
+            >
+              Description
+            </button>
+            <button 
+              onClick={() => setActiveTab("discussion")}
+              className={`py-3 text-xs font-bold uppercase tracking-widest transition-all border-b-2 flex items-center gap-2 ${
+                activeTab === "discussion" ? "text-amber-500 border-amber-500" : "text-slate-500 border-transparent hover:text-slate-300"
+              }`}
+            >
+              Discussion
+              <span className="bg-slate-800 text-[10px] px-1.5 py-0.5 rounded-full text-slate-400 font-black">
+                NEW
+              </span>
+            </button>
+            <button 
+              onClick={() => setActiveTab("submissions")}
+              className={`py-3 text-xs font-bold uppercase tracking-widest transition-all border-b-2 ${
+                activeTab === "submissions" ? "text-amber-500 border-amber-500" : "text-slate-500 border-transparent hover:text-slate-300"
+              }`}
+            >
+              Solutions
+            </button>
+          </div>
 
-            {(problem.exampleInput || problem.exampleOutput) && (
-              <div className="space-y-4 pt-4 border-t border-slate-900">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <ChevronRight className="w-3 h-3 text-emerald-500" />
-                  Example Case
-                </h3>
-                <div className="grid gap-4">
-                  {problem.exampleInput && (
-                    <div className="space-y-2">
-                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tight ml-1">Input</div>
-                      <pre className="rounded-lg bg-slate-950 border border-slate-800 p-4 font-mono text-xs text-slate-100 overflow-auto shadow-inner">
-                        {problem.exampleInput}
-                      </pre>
-                    </div>
-                  )}
-                  {problem.exampleOutput && (
-                    <div className="space-y-2">
-                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tight ml-1">Output</div>
-                      <pre className="rounded-lg bg-slate-950 border border-slate-800 p-4 font-mono text-xs text-emerald-400 overflow-auto shadow-inner transition-colors active:bg-emerald-500/5">
-                        {problem.exampleOutput}
-                      </pre>
-                    </div>
-                  )}
+          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+            {activeTab === "description" && (
+              <div className="space-y-8 pb-12">
+                <div className="prose prose-invert prose-sm max-w-none">
+                  <div className="flex items-center gap-2 text-slate-400 mb-4 font-bold text-xs uppercase tracking-wider">
+                    <Info className="w-3 h-3" />
+                    Problem Description
+                  </div>
+                  <p className="whitespace-pre-line text-slate-200 leading-relaxed text-sm">
+                    {problem.description}
+                  </p>
                 </div>
+
+                {(problem.exampleInput || problem.exampleOutput) && (
+                  <div className="space-y-4 pt-4 border-t border-slate-900">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <ChevronRight className="w-3 h-3 text-emerald-500" />
+                      Example Case
+                    </h3>
+                    <div className="grid gap-4">
+                      {problem.exampleInput && (
+                        <div className="space-y-2">
+                          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tight ml-1">Input</div>
+                          <pre className="rounded-lg bg-slate-950 border border-slate-800 p-4 font-mono text-xs text-slate-100 overflow-auto shadow-inner">
+                            {problem.exampleInput}
+                          </pre>
+                        </div>
+                      )}
+                      {problem.exampleOutput && (
+                        <div className="space-y-2">
+                          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tight ml-1">Output</div>
+                          <pre className="rounded-lg bg-slate-950 border border-slate-800 p-4 font-mono text-xs text-emerald-400 overflow-auto shadow-inner transition-colors active:bg-emerald-500/5">
+                            {problem.exampleOutput}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "discussion" && (
+              <div className="pb-12">
+                <CommentSection problemId={problem.id} />
+              </div>
+            )}
+
+            {activeTab === "submissions" && (
+              <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-50">
+                <MessageSquare className="w-12 h-12 text-slate-700" />
+                <p className="text-sm text-slate-500 font-medium tracking-tight uppercase tracking-[0.2em]">Solution Browser coming soon</p>
               </div>
             )}
           </div>
