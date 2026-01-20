@@ -1,12 +1,12 @@
 // src/features/problems/api.ts
 import { problemClient } from "@/lib/problemHttp";
 import type {
-  ApiResponse,
-  Page,
-  ProblemDetail,
-  ProblemInput,
-  ProblemListFilters,
-  ProblemSummary,
+    ApiResponse,
+    Page,
+    ProblemDetail,
+    ProblemInput,
+    ProblemListFilters,
+    ProblemSummary,
 } from "./types";
 
 // Public: list problems
@@ -27,6 +27,19 @@ export async function fetchProblems(
     }
   );
 
+  return response.data.data;
+}
+
+/**
+ * Searches problems using Meilisearch (via Problem Service /search endpoint)
+ */
+export async function searchProblems(query: string): Promise<ProblemSummary[]> {
+  const response = await problemClient.get<ApiResponse<ProblemSummary[]>>(
+    "/problems/search",
+    {
+      params: { q: query },
+    }
+  );
   return response.data.data;
 }
 
