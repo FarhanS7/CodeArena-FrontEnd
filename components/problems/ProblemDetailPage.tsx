@@ -23,11 +23,13 @@ import {
     Play,
     RotateCcw,
     Send,
-    Settings2
+    Settings2,
+    Sparkles
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { AiHintPanel } from "./AiHintPanel";
 import { CodeEditor } from "./CodeEditor";
 import { SubmissionStatusDisplay } from "./SubmissionStatusDisplay";
 
@@ -53,6 +55,9 @@ export function ProblemDetailPage() {
   // Submission State
   const [currentSubmission, setCurrentSubmission] = useState<Submission | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // AI Hint State
+  const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
 
   // Real-time updates via Socket.io
   const { on, off } = useSocket(user?.id);
@@ -198,6 +203,14 @@ export function ProblemDetailPage() {
             </SelectContent>
           </Select>
           <div className="h-4 w-px bg-slate-800" />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setIsAiPanelOpen(true)}
+            className={`h-9 w-9 ${isAiPanelOpen ? 'text-amber-400' : 'text-slate-400'} hover:text-white`}
+          >
+            <Sparkles className="w-4 h-4" />
+          </Button>
           <Button variant="ghost" size="icon" className="h-9 w-9 text-slate-400 hover:text-white">
             <RotateCcw className="w-4 h-4" />
           </Button>
@@ -307,6 +320,14 @@ export function ProblemDetailPage() {
           </div>
         </div>
       </div>
+
+      <AiHintPanel 
+        problemId={problem.id}
+        code={code}
+        language={language}
+        isOpen={isAiPanelOpen}
+        onClose={() => setIsAiPanelOpen(false)}
+      />
     </div>
   );
 }
