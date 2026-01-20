@@ -79,13 +79,12 @@ export function LandingNavbar() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
-            {["Features", "Problems", "How It Works", "Testimonials"].map(
+            {["Features", "Problems", "Leaderboard", "How It Works"].map(
               (item) => (
                 <Link
                   key={item}
-                  href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                  href={item === "Problems" ? "/problems" : item === "Leaderboard" ? "/leaderboard" : `#${item.toLowerCase().replace(/\s+/g, "-")}`}
                   className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-all duration-200"
                 >
                   {item}
