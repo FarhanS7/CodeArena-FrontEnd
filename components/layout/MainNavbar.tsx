@@ -155,12 +155,15 @@ export function LandingNavbar() {
                 >
                   <Link href="/dashboard">Dashboard</Link>
                 </Button>
-                <Button
-                  onClick={() => logout()}
-                  className="bg-red-500 hover:bg-red-600 text-white rounded-full px-6 transition-all duration-300 hover:scale-105 shadow-lg shadow-red-500/20"
-                >
-                  Logout
-                </Button>
+                {user.role === "ADMIN" && (
+                  <Button
+                    variant="ghost"
+                    asChild
+                    className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-transparent"
+                  >
+                    <Link href="/admin">Admin</Link>
+                  </Button>
+                )}
               </>
             ) : (
               <>

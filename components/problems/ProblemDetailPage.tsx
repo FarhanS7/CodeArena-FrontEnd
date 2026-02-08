@@ -18,6 +18,7 @@ import { Submission } from "@/features/submissions/types";
 import {
     AlertCircle,
     ChevronRight,
+    Edit2,
     Info,
     Loader2,
     MessageSquare,
@@ -27,6 +28,7 @@ import {
     Settings2,
     Sparkles
 } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -208,6 +210,19 @@ export function ProblemDetailPage() {
             </SelectContent>
           </Select>
           <div className="h-4 w-px bg-slate-800" />
+          {user?.role === "ADMIN" && (
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="h-9 bg-slate-900 border-slate-800 hover:bg-slate-800 text-xs font-bold gap-2"
+            >
+              <Link href={`/admin/problems/${problem.id}`}>
+                <Edit2 className="w-3 h-3 text-blue-400" />
+                Edit Problem
+              </Link>
+            </Button>
+          )}
           <Button 
             variant="ghost" 
             size="icon" 

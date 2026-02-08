@@ -3,13 +3,14 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/features/auth/AuthProvider";
 import { fetchProblems, searchProblems } from "@/features/problems/api";
 import type {
     Difficulty,
     Page,
     ProblemSummary,
 } from "@/features/problems/types";
-import { ChevronLeft, ChevronRight, Info, Loader2, Search, SlidersHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit2, Info, Loader2, Plus, Search, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
@@ -17,6 +18,7 @@ import { useDebounce } from "use-debounce";
 const difficulties: Difficulty[] = ["EASY", "MEDIUM", "HARD"];
 
 export function ProblemListPage() {
+  const { user } = useAuth();
   const [problemsPage, setProblemsPage] = useState<Page<ProblemSummary> | null>(null);
   const [searchResults, setSearchResults] = useState<ProblemSummary[] | null>(null);
   const [page, setPage] = useState(0);
@@ -72,7 +74,17 @@ export function ProblemListPage() {
           </div>
           Problem Arena
         </h1>
-        <p className="text-slate-400 font-medium">Challenge yourself with curated coding problems.</p>
+        <div className="flex justify-between items-center">
+          <p className="text-slate-400 font-medium">Challenge yourself with curated coding problems.</p>
+          {user?.role === "ADMIN" && (
+            <Button asChild className="bg-blue-600 hover:bg-blue-500 rounded-xl px-6">
+                <Link href="/admin/problems/new" className="flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    Create Problem
+                </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Filters & Search */}
@@ -141,13 +153,13 @@ export function ProblemListPage() {
         <div className="grid gap-3">
           {isSearching ? (
              searchResults && searchResults.length > 0 ? (
-                searchResults.map((p) => <ProblemRow key={p.id} problem={p} />)
+                searchResults.map((p) => <ProblemRow key={p.id} problem={p} user={user} />)
              ) : (
                 <EmptyState query={debouncedSearch} />
              )
           ) : (
             problemsPage && problemsPage.content.length > 0 ? (
-                problemsPage.content.map((p) => <ProblemRow key={p.id} problem={p} />)
+                problemsPage.content.map((p) => <ProblemRow key={p.id} problem={p} user={user} />)
             ) : (
                 <EmptyState />
             )
@@ -189,7 +201,7 @@ export function ProblemListPage() {
   );
 }
 
-function ProblemRow({ problem }: { problem: ProblemSummary }) {
+function ProblemRow({ problem, user }: { problem: ProblemSummary; user: any }) {
     return (
         <Link
             href={`/problems/${problem.id}`}
@@ -207,12 +219,27 @@ function ProblemRow({ problem }: { problem: ProblemSummary }) {
                 <div className="flex items-center gap-6">
                     <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border ${
                         problem.difficulty === "EASY" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
-                        problem.difficulty === "MEDIUM" ? "bg-amber-500/10 text-amber-500 border-amber-500/20" :
+                        problem.difficulty === "MEDIUM" ? "bg-amber-500/10 text-amber-500 border-emerald-500/20" :
                         "bg-rose-500/10 text-rose-500 border-rose-500/20"
                     }`}>
                         {problem.difficulty}
                     </span>
-                    <ChevronRight className="w-5 h-5 text-slate-700 group-hover:text-blue-500 transition-colors group-hover:translate-x-1 duration-300" />
+                    <div className="flex items-center gap-2">
+                        {user?.role === "ADMIN" && (
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                asChild
+                                className="w-8 h-8 rounded-lg hover:bg-blue-500/20 text-slate-500 hover:text-blue-400"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <Link href={`/admin/problems/${problem.id}`}>
+                                    <Edit2 className="w-4 h-4" />
+                                </Link>
+                            </Button>
+                        )}
+                        <ChevronRight className="w-5 h-5 text-slate-700 group-hover:text-blue-500 transition-colors group-hover:translate-x-1 duration-300" />
+                    </div>
                 </div>
             </div>
         </Link>
