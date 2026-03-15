@@ -9,8 +9,8 @@ import { useState } from "react";
 
 export function ProblemAdminLoginForm() {
   const { login } = useProblemAdminAuth();
-  const [username, setUsername] = useState("admin");
-  const [password, setPassword] = useState("adminpass");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
