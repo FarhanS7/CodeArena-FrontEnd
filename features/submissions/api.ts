@@ -28,7 +28,9 @@ export async function fetchUserStats(userId: number): Promise<UserStats> {
   return response.data.data;
 }
 
-export async function fetchProblemSubmissions(problemId: number): Promise<Submission[]> {
-  const response = await api.get(`/submissions/problem/${problemId}`);
+export async function fetchProblemSubmissions(problemId: number, status?: string): Promise<Submission[]> {
+  const response = await api.get(`/submissions`, {
+    params: { problemId, status }
+  });
   return response.data.data;
 }

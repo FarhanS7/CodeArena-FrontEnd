@@ -23,6 +23,7 @@ export interface TestResult {
 export interface Submission {
   id: number;
   userId: string;
+  username?: string;
   problemId: number;
   language: string;
   sourceCode: string;
@@ -39,6 +40,7 @@ export interface Submission {
 
 export interface CreateSubmissionDto {
   userId: string;
+  username?: string;
   problemId: number;
   language: string;
   sourceCode: string;

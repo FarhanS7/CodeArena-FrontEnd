@@ -35,6 +35,7 @@ import { toast } from "sonner";
 import { AiHintPanel } from "./AiHintPanel";
 import { CodeEditor } from "./CodeEditor";
 import { CommentSection } from "./CommentSection";
+import { SolutionList } from "./SolutionList";
 import { SubmissionStatusDisplay } from "./SubmissionStatusDisplay";
 
 const LANGUAGES = [
@@ -146,6 +147,7 @@ export function ProblemDetailPage() {
     try {
       const sub = await createSubmission({
         userId: user.id,
+        username: user.username,
         problemId: problem.id,
         language,
         sourceCode: code
@@ -324,9 +326,8 @@ export function ProblemDetailPage() {
             )}
 
             {activeTab === "submissions" && (
-              <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-50">
-                <MessageSquare className="w-12 h-12 text-slate-700" />
-                <p className="text-sm text-slate-500 font-medium tracking-tight uppercase tracking-[0.2em]">Solution Browser coming soon</p>
+              <div className="pb-12">
+                <SolutionList problemId={problem.id} />
               </div>
             )}
           </div>

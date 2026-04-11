@@ -6,6 +6,11 @@ export async function fetchComments(problemId: number): Promise<Comment[]> {
   return response.data;
 }
 
+export async function fetchAllComments(): Promise<Comment[]> {
+  const response = await discussionClient.get<Comment[]>("/discussions");
+  return response.data;
+}
+
 export async function createComment(dto: CreateCommentDto): Promise<Comment> {
   const response = await discussionClient.post<Comment>("/discussions", dto);
   return response.data;
