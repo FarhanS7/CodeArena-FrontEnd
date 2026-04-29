@@ -16,15 +16,14 @@ export function useSocket(userId: string | undefined) {
     const socket = io(SOCKET_URL, {
       transports: ["websocket"],
       autoConnect: true,
+      withCredentials: true, // Send cookies to the server
     });
 
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      console.log("Connected to Realtime Gateway");
+      console.log("Connected to Realtime Gateway (Authenticated)");
       setIsConnected(true);
-      // Join user-specific room
-      socket.emit("join-room", userId);
     });
 
     socket.on("disconnect", () => {
@@ -38,7 +37,6 @@ export function useSocket(userId: string | undefined) {
 
     return () => {
       if (socket) {
-        socket.emit("leave-room", userId);
         socket.disconnect();
       }
     };
