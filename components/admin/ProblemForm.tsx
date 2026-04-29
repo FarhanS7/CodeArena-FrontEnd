@@ -31,8 +31,23 @@ export function ProblemForm({ initialData, onSubmit, isLoading, title }: Problem
     description: initialData?.description || "",
     exampleInput: initialData?.exampleInput || "",
     exampleOutput: initialData?.exampleOutput || "",
+    published: initialData?.published || false,
+    tags: initialData?.tags || [] as string[],
     testCases: initialData?.testCases || [{ input: "", expectedOutput: "" }],
   });
+
+  const [tagInput, setTagInput] = useState("");
+
+  const handleAddTag = () => {
+    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+      setFormData({ ...formData, tags: [...formData.tags, tagInput.trim()] });
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    setFormData({ ...formData, tags: formData.tags.filter(t => t !== tag) });
+  };
 
   const handleAddTestCase = () => {
     setFormData({
@@ -179,6 +194,64 @@ export function ProblemForm({ initialData, onSubmit, isLoading, title }: Problem
 
          {/* Right: Meta & Tips */}
          <div className="space-y-8">
+            {/* Visibility Control */}
+            <div className="p-8 rounded-[2.5rem] bg-slate-900/50 border border-slate-800 space-y-6">
+               <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                     <Save className={`w-5 h-5 ${formData.published ? 'text-emerald-500' : 'text-slate-500'}`} />
+                     <h3 className="text-sm font-black uppercase tracking-widest text-slate-300">Deployment</h3>
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={() => setFormData({...formData, published: !formData.published})}
+                    className={`w-12 h-6 rounded-full transition-colors relative ${formData.published ? 'bg-emerald-600' : 'bg-slate-800'}`}
+                  >
+                     <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${formData.published ? 'left-7' : 'left-1'}`} />
+                  </button>
+               </div>
+               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">
+                  {formData.published 
+                    ? "Module is active and visible to all operators in the arena." 
+                    : "Module is in draft mode. Only visible to administrative units."}
+               </p>
+            </div>
+
+            {/* Tags Management */}
+            <div className="p-8 rounded-[2.5rem] bg-slate-900/50 border border-slate-800 space-y-6">
+               <div className="flex items-center gap-3">
+                  <Info className="w-5 h-5 text-blue-500" />
+                  <h3 className="text-sm font-black uppercase tracking-widest text-slate-300">Classification</h3>
+               </div>
+               
+               <div className="flex flex-wrap gap-2">
+                  {formData.tags.map(tag => (
+                    <span key={tag} className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg text-[10px] font-black text-blue-400 uppercase flex items-center gap-2">
+                       {tag}
+                       <button type="button" onClick={() => handleRemoveTag(tag)} className="hover:text-white transition-colors">
+                          <Trash2 className="w-3 h-3" />
+                       </button>
+                    </span>
+                  ))}
+               </div>
+
+               <div className="flex gap-2">
+                  <Input 
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                    placeholder="New Tag..."
+                    className="bg-slate-950/50 border-slate-800 h-10 rounded-xl text-xs"
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={handleAddTag}
+                    className="h-10 w-10 p-0 bg-slate-800 hover:bg-slate-700 rounded-xl"
+                  >
+                     <Plus className="w-4 h-4" />
+                  </Button>
+               </div>
+            </div>
+
             <div className="p-8 rounded-[2.5rem] bg-slate-900/50 border border-slate-800 space-y-8 sticky top-8">
                <div className="flex items-center gap-3">
                   <Code2 className="w-5 h-5 text-blue-500" />

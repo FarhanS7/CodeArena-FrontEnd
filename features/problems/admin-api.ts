@@ -15,6 +15,8 @@ export interface AdminProblem {
   description: string;
   exampleInput?: string;
   exampleOutput?: string;
+  published: boolean;
+  tags: string[];
   testCases?: {
     id?: number;
     input: string;
