@@ -2,23 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Download, BarChart3 } from 'lucide-react';
-
-interface Submission {
-  id: string;
-  problemId: number;
-  problemTitle: string;
-  status: 'ACCEPTED' | 'WRONG_ANSWER' | 'TIME_LIMIT_EXCEEDED' | 'COMPILATION_ERROR' | 'RUNTIME_ERROR' | 'PARTIAL';
-  language: string;
-  submittedAt: string;
-  score: number;
-  difficulty?: 'EASY' | 'MEDIUM' | 'HARD';
-  verdict?: {
-    runtime: number;
-    memory: number;
-    runtimePercent: number;
-    memoryPercent: number;
-  };
-}
+import { Submission } from '@/types';
 
 interface SubmissionListProps {
   submissions: Submission[];

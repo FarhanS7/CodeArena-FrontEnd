@@ -2,14 +2,9 @@
 
 import React from 'react';
 import { X } from 'lucide-react';
+import { Submission } from '@/types';
 
-interface Submission {
-  id: string;
-  code: string;
-  language: string;
-  status: string;
-  submittedAt: string;
-}
+// interface Submission removed and imported instead
 
 interface SubmissionComparisonProps {
   submission1?: Submission;
@@ -59,7 +54,7 @@ export function SubmissionComparison({
 
             {/* Code */}
             <pre className="flex-1 overflow-y-auto bg-gray-900 text-gray-100 p-4 text-xs font-mono">
-              {submission1.code}
+              {submission1.code || '// No code available'}
             </pre>
           </div>
 
@@ -77,7 +72,7 @@ export function SubmissionComparison({
 
             {/* Code */}
             <pre className="flex-1 overflow-y-auto bg-gray-900 text-gray-100 p-4 text-xs font-mono">
-              {submission2.code}
+              {submission2.code || '// No code available'}
             </pre>
           </div>
         </div>

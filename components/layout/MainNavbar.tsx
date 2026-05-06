@@ -2,14 +2,22 @@
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useAutocomplete, useNotifications } from "@/hooks";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { Search, Bell, LogOut, User as UserIcon, Award, Settings } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 export function LandingNavbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const [isDark, setIsDark] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { suggestions, isLoading: isSearchLoading } = useAutocomplete(searchQuery);
+  const { notifications } = useNotifications();
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   useEffect(() => {
     setIsMounted(true);
@@ -79,18 +87,44 @@ export function LandingNavbar() {
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-1">
-            {["Features", "Problems", "Leaderboard", "How It Works"].map(
+          <div className="hidden lg:flex items-center gap-1">
+            {["Problems", "Leaderboard", "Feed"].map(
               (item) => (
                 <Link
                   key={item}
-                  href={item === "Problems" ? "/problems" : item === "Leaderboard" ? "/leaderboard" : `#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                  href={`/${item.toLowerCase()}`}
                   className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-all duration-200"
                 >
                   {item}
                 </Link>
               )
             )}
+          </div>
+
+          {/* Search Bar */}
+          <div className="hidden md:flex flex-1 max-w-sm mx-8 relative">
+            <div className="relative w-full group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+              <Input
+                placeholder="Search problems, users..."
+                className="pl-10 pr-4 py-2 w-full bg-slate-100 dark:bg-white/5 border-transparent focus:bg-white dark:focus:bg-white/10 transition-all rounded-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery.length >= 2 && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1A1F2E] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[60] animate-in fade-in slide-in-from-top-2">
+                  {suggestions.map((s: any) => (
+                    <Link
+                      key={s.id}
+                      href={`/problems/${s.id}`}
+                      className="flex items-center px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors border-b last:border-none border-slate-100 dark:border-white/5"
+                    >
+                      <span className="text-sm text-slate-700 dark:text-slate-300">{s.title}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Actions */}
@@ -102,41 +136,29 @@ export function LandingNavbar() {
               className="rounded-full w-10 h-10 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
             >
               {isDark ? (
-                // Sun Icon (Solar Style)
-                <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="4" />
-                  <path d="M12 2v2" />
-                  <path d="M12 20v2" />
-                  <path d="M4.93 4.93l1.41 1.41" />
-                  <path d="M17.66 17.66l1.41 1.41" />
-                  <path d="M2 12h2" />
-                  <path d="M20 12h2" />
-                  <path d="M6.34 17.66l-1.41 1.41" />
-                  <path d="M19.07 4.93l-1.41 1.41" />
-                </svg>
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="M4.93 4.93l1.41 1.41" /><path d="M17.66 17.66l1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="M6.34 17.66l-1.41 1.41" /><path d="M19.07 4.93l-1.41 1.41" /></svg>
               ) : (
-                // Moon Icon
-                <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-                </svg>
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
               )}
             </Button>
+
+            {isAuthenticated && (
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                className="relative rounded-full w-10 h-10 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+              >
+                <Link href="/notifications">
+                  <Bell className="w-5 h-5" />
+                  {unreadCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 border-2 border-white dark:border-[#0B0E14] text-[10px] animate-in zoom-in">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </Badge>
+                  )}
+                </Link>
+              </Button>
+            )}
 
             {!isMounted ? (
               // Loading state or default unauthenticated state to prevent hydration mismatch

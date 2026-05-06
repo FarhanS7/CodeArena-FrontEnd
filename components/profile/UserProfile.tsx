@@ -8,6 +8,7 @@ import { UserRatingProgress } from './UserRatingProgress';
 import { UserSubmissionStats } from './UserSubmissionStats';
 import { UserSubmissionHistory } from './UserSubmissionHistory';
 import { UserContestHistory } from './UserContestHistory';
+import { UserAchievements } from './UserAchievements';
 
 interface User {
   id: string;
@@ -70,7 +71,7 @@ interface UserProfileProps {
   onEditProfile: () => void;
 }
 
-type TabType = 'overview' | 'submissions' | 'contests';
+type TabType = 'overview' | 'submissions' | 'contests' | 'achievements';
 
 /**
  * UserProfile Component - Main profile display component
@@ -174,6 +175,16 @@ export function UserProfile({
             >
               Contests
             </button>
+            <button
+              onClick={() => setActiveTab('achievements')}
+              className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                activeTab === 'achievements'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Achievements
+            </button>
 
             {/* Settings Button - Right aligned */}
             <div className="ml-auto">
@@ -202,6 +213,11 @@ export function UserProfile({
         {/* Contests Tab Content */}
         {activeTab === 'contests' && (
           <UserContestHistory contests={contests} ratingHistory={ratingHistory} />
+        )}
+
+        {/* Achievements Tab Content */}
+        {activeTab === 'achievements' && (
+          <UserAchievements userId={userId} />
         )}
       </div>
     </div>

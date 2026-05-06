@@ -5,7 +5,7 @@ import { Search, X, Filter } from 'lucide-react';
 
 interface SearchInputProps {
   onSearch: (query: string) => void;
-  placeh?: string;
+  placeholder?: string;
 }
 
 /**

@@ -3,24 +3,26 @@ import { apiClient } from './client';
 // Types
 export interface SavedProblem {
   id: number;
-  title: string;
-  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
-  tags: string[];
-  acceptanceRate: number;
-  collection?: string;
+  userId: string;
+  problemId: number;
+  collection: string;
+  createdAt: string;
 }
 
 export interface SearchHistory {
   id: number;
+  userId: string;
   query: string;
-  timestamp: string;
   count: number;
+  timestamp: string;
 }
 
 export interface SearchPreset {
   id: number;
+  userId: string;
   name: string;
-  filters: Record<string, any>;
+  filters: any;
+  createdAt: string;
 }
 
 export interface AutocompleteSuggestion {
@@ -30,21 +32,41 @@ export interface AutocompleteSuggestion {
 
 // Search API Service
 export class SearchService {
+  // Advanced Search
+  static async searchProblems(query: string = '', difficulty?: string, tags?: string[]) {
+    const params = new URLSearchParams();
+    if (query) params.append('q', query);
+    if (difficulty) params.append('difficulty', difficulty);
+    if (tags && tags.length > 0) params.append('tags', tags.join(','));
+
+    return apiClient.get<{
+      data: any[];
+      total: number;
+      processingTimeMs: number;
+    }>(`/search/problems?${params.toString()}`);
+  }
+
+  // Autocomplete
+  static async getAutocomplete(query: string) {
+    return apiClient.get<{ data: AutocompleteSuggestion[] }>(`/search/autocomplete?q=${query}`);
+  }
+
+  // Recommendations
+  static async getRecommendations() {
+    return apiClient.get<{ data: any[] }>(`/search/recommendations`);
+  }
+
   // Saved Problems
   static async getSavedProblems() {
-    return apiClient.get<SavedProblem[]>('/problems/saved');
+    return apiClient.get<SavedProblem[]>('/search/saved');
+  }
+
+  static async saveProblem(problemId: number, collection: string = 'default') {
+    return apiClient.post(`/search/saved/${problemId}`, { collection });
   }
 
   static async unsaveProblem(problemId: number) {
-    return apiClient.delete(`/problems/${problemId}/unsave`);
-  }
-
-  static async saveProblem(problemId: number, collection?: string) {
-    return apiClient.post(`/problems/${problemId}/save`, { collection });
-  }
-
-  static async exportSavedProblems() {
-    return apiClient.get<{ downloadUrl: string }>('/problems/saved/export');
+    return apiClient.delete(`/search/saved/${problemId}`);
   }
 
   // Search History
@@ -52,76 +74,29 @@ export class SearchService {
     return apiClient.get<SearchHistory[]>('/search/history');
   }
 
-  static async deleteSearchHistory(id: number) {
+  static async deleteHistoryItem(id: number) {
     return apiClient.delete(`/search/history/${id}`);
   }
 
-  static async clearSearchHistory() {
+  static async clearHistory() {
     return apiClient.delete('/search/history');
   }
 
-  // Autocomplete
-  static async getAutocompleteSuggestions(query: string) {
-    return apiClient.get<AutocompleteSuggestion[]>(`/problems/autocomplete?q=${query}`);
-  }
-
-  // Search Presets
-  static async getSavedPresets() {
+  // Presets
+  static async getPresets() {
     return apiClient.get<SearchPreset[]>('/search/presets');
   }
 
-  static async savePreset(name: string, filters: Record<string, any>) {
-    return apiClient.post(`/search/presets`, { name, filters });
+  static async savePreset(name: string, filters: any) {
+    return apiClient.post('/search/presets', { name, filters });
   }
 
   static async deletePreset(id: number) {
     return apiClient.delete(`/search/presets/${id}`);
   }
 
-  static async loadPreset(id: number) {
-    return apiClient.get<SearchPreset>(`/search/presets/${id}`);
-  }
-
-  // Search Statistics
-  static async getSearchStats() {
-    return apiClient.get<{
-      totalSearches: number;
-      averageSearchTime: number;
-      mostSearched: string;
-      trendingSearches: string[];
-    }>('/search/stats');
-  }
-
-  static async getTrendingSearches() {
-    return apiClient.get<
-      Array<{
-        query: string;
-        searches: number;
-        trend: 'up' | 'down' | 'stable';
-      }>
-    >('/search/trending');
-  }
-
-  // Advanced Search
-  static async searchProblems(filters: {
-    query?: string;
-    difficulty?: string;
-    minAcceptanceRate?: number;
-    maxAcceptanceRate?: number;
-    tags?: string[];
-    page?: number;
-    pageSize?: number;
-  }) {
-    const params = new URLSearchParams();
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        if (Array.isArray(value)) {
-          params.append(key, JSON.stringify(value));
-        } else {
-          params.append(key, String(value));
-        }
-      }
-    });
-    return apiClient.get(`/problems/search?${params.toString()}`);
+  // Trending
+  static async getTrending() {
+    return apiClient.get<{ data: any[] }>('/search/trending');
   }
 }

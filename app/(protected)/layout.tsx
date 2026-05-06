@@ -2,6 +2,7 @@
 
 import { LandingNavbar } from "@/components/layout/MainNavbar";
 import { RoleGuard } from "@/features/auth/RoleGuard";
+import { ProblemAdminAuthProvider } from "@/features/problemAdmin/ProblemAdminAuthProvider";
 
 export default function ProtectedLayout({
   children,
@@ -10,8 +11,10 @@ export default function ProtectedLayout({
 }) {
   return (
     <RoleGuard allowedRoles={["USER", "ADMIN"]}>
-      <LandingNavbar/>
-      {children}
+      <ProblemAdminAuthProvider>
+        <LandingNavbar/>
+        {children}
+      </ProblemAdminAuthProvider>
     </RoleGuard>
   );
 }

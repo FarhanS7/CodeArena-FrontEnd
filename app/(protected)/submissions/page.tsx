@@ -10,31 +10,9 @@ import {
   SubmissionDetailsModal,
   SubmissionComparison,
 } from '@/components/submissions';
+import { Submission } from '@/types';
 
-interface Submission {
-  id: string;
-  problemId: number;
-  problemTitle: string;
-  status: 'ACCEPTED' | 'WRONG_ANSWER' | 'TIME_LIMIT_EXCEEDED' | 'COMPILATION_ERROR' | 'RUNTIME_ERROR' | 'PARTIAL';
-  language: string;
-  submittedAt: string;
-  score: number;
-  difficulty?: 'EASY' | 'MEDIUM' | 'HARD';
-  code?: string;
-  verdict?: {
-    runtime: number;
-    memory: number;
-    runtimePercent: number;
-    memoryPercent: number;
-  };
-  testResults?: Array<{
-    testCase: number;
-    expected: string;
-    actual: string;
-    status: 'PASS' | 'FAIL';
-    stderr: string;
-  }>;
-}
+// interface Submission removed and imported instead
 
 interface SubmissionStats {
   totalSubmissions: number;

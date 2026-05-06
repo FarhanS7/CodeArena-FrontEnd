@@ -20,21 +20,18 @@ export function useSearchHistory() {
     }
   }, []);
 
-  const deleteItem = useCallback(
-    async (id: number) => {
-      try {
-        await SearchService.deleteSearchHistory(id);
-        setHistory((prev) => prev.filter((h) => h.id !== id));
-      } catch (err: any) {
-        setError(err.message);
-      }
-    },
-    [],
-  );
+  const deleteItem = useCallback(async (id: number) => {
+    try {
+      await SearchService.deleteHistoryItem(id);
+      setHistory(prev => prev.filter(h => h.id !== id));
+    } catch (err: any) {
+      setError(err.message);
+    }
+  }, []);
 
   const clearAll = useCallback(async () => {
     try {
-      await SearchService.clearSearchHistory();
+      await SearchService.clearHistory();
       setHistory([]);
     } catch (err: any) {
       setError(err.message);
@@ -70,17 +67,26 @@ export function useSavedProblems() {
   const unsave = useCallback(async (problemId: number) => {
     try {
       await SearchService.unsaveProblem(problemId);
-      setProblems((prev) => prev.filter((p) => p.id !== problemId));
+      setProblems(prev => prev.filter(p => p.problemId !== problemId));
     } catch (err: any) {
       setError(err.message);
     }
   }, []);
 
+  const save = useCallback(async (problemId: number, collection?: string) => {
+    try {
+      await SearchService.saveProblem(problemId, collection);
+      loadProblems(); // Reload to get fresh data
+    } catch (err: any) {
+      setError(err.message);
+    }
+  }, [loadProblems]);
+
   useEffect(() => {
     loadProblems();
   }, [loadProblems]);
 
-  return { problems, isLoading, error, unsave, reload: loadProblems };
+  return { problems, isLoading, error, unsave, save, reload: loadProblems };
 }
 
 // useSearchPresets Hook
@@ -92,7 +98,7 @@ export function useSearchPresets() {
   const loadPresets = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await SearchService.getSavedPresets();
+      const response = await SearchService.getPresets();
       setPresets(response.data);
       setError(null);
     } catch (err: any) {
@@ -102,28 +108,19 @@ export function useSearchPresets() {
     }
   }, []);
 
-  const save = useCallback(
-    async (name: string, filters: Record<string, any>) => {
-      try {
-        const response = await SearchService.savePreset(name, filters);
-        const newPreset = {
-          id: Date.now(),
-          name,
-          filters,
-        };
-        setPresets((prev) => [...prev, newPreset]);
-        return newPreset;
-      } catch (err: any) {
-        setError(err.message);
-      }
-    },
-    [],
-  );
+  const save = useCallback(async (name: string, filters: any) => {
+    try {
+      await SearchService.savePreset(name, filters);
+      loadPresets();
+    } catch (err: any) {
+      setError(err.message);
+    }
+  }, [loadPresets]);
 
   const deletePreset = useCallback(async (id: number) => {
     try {
       await SearchService.deletePreset(id);
-      setPresets((prev) => prev.filter((p) => p.id !== id));
+      setPresets(prev => prev.filter(p => p.id !== id));
     } catch (err: any) {
       setError(err.message);
     }
@@ -151,15 +148,15 @@ export function useAutocomplete(query: string, enabled = true) {
     const timer = setTimeout(async () => {
       setIsLoading(true);
       try {
-        const response = await SearchService.getAutocompleteSuggestions(query);
-        setSuggestions(response.data);
+        const response = await SearchService.getAutocomplete(query);
+        setSuggestions(response.data.data);
         setError(null);
       } catch (err: any) {
         setError(err.message);
       } finally {
         setIsLoading(false);
       }
-    }, 300); // Debounce
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [query, enabled]);
@@ -167,18 +164,18 @@ export function useAutocomplete(query: string, enabled = true) {
   return { suggestions, isLoading, error };
 }
 
-// useSearchStats Hook
-export function useSearchStats() {
-  const [stats, setStats] = useState<any>(null);
+// useRecommendations Hook
+export function useRecommendations() {
+  const [recommendations, setRecommendations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadStats = async () => {
+    const loadRecommendations = async () => {
       setIsLoading(true);
       try {
-        const response = await SearchService.getSearchStats();
-        setStats(response.data);
+        const response = await SearchService.getRecommendations();
+        setRecommendations(response.data.data);
         setError(null);
       } catch (err: any) {
         setError(err.message);
@@ -187,8 +184,8 @@ export function useSearchStats() {
       }
     };
 
-    loadStats();
+    loadRecommendations();
   }, []);
 
-  return { stats, isLoading, error };
+  return { recommendations, isLoading, error };
 }

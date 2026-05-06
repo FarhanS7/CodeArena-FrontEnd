@@ -2,168 +2,77 @@ import { apiClient } from './client';
 
 // Types
 export interface User {
-  id: number;
+  id: string;
   username: string;
   avatar?: string;
   rating: number;
   problemsSolved: number;
   followerCount: number;
-}
-
-export interface Follower {
-  id: number;
-  username: string;
-  avatar?: string;
-}
-
-export interface FollowerStats {
-  rank: number;
-  username: string;
-  followerCount: number;
-  rating: number;
-  isCurrentUser?: boolean;
 }
 
 export interface Activity {
   id: number;
-  type: 'SOLVED_PROBLEM' | 'CONTEST_PARTICIPATION' | 'DISCUSSION_UPVOTE' | 'NEW_FOLLOWER';
-  actor: string;
-  problem?: string;
-  contest?: string;
-  rank?: number;
-  timestamp: string;
-  engagement?: number;
+  userId: string;
+  type: 'SOLVED' | 'FOLLOWED' | 'ACHIEVEMENT';
+  content: string;
+  metadata?: any;
+  createdAt: string;
 }
 
-export interface FollowSuggestion {
+export interface Notification {
   id: number;
-  username: string;
-  rating: number;
-  problemsSolved: number;
-  reason: string;
-  avatar?: string;
+  userId: string;
+  type: string;
+  message: string;
+  read: boolean;
+  data?: any;
+  createdAt: string;
 }
 
-export interface FollowStatus {
-  isFollowing: boolean;
-  isFollowedBy: boolean;
+export interface Achievement {
+  id: number;
+  userId: string;
+  achievementType: string;
+  title: string;
+  earnedAt: string;
 }
 
 // Social API Service
 export class SocialService {
   // Follow Actions
-  static async followUser(userId: number) {
-    return apiClient.post(`/users/${userId}/follow`, {});
+  static async followUser(userId: string) {
+    return apiClient.post(`/social/follow/${userId}`, {});
   }
 
-  static async unfollowUser(userId: number) {
-    return apiClient.delete(`/users/${userId}/unfollow`);
-  }
-
-  static async getFollowStatus(userId: number) {
-    return apiClient.get<FollowStatus>(`/users/${userId}/follow-status`);
+  static async unfollowUser(userId: string) {
+    return apiClient.delete(`/social/follow/${userId}`);
   }
 
   // Followers & Following
-  static async getFollowers(userId: number, page = 1, pageSize = 10) {
-    return apiClient.get<{
-      data: Follower[];
-      total: number;
-    }>(`/users/${userId}/followers?page=${page}&pageSize=${pageSize}`);
+  static async getFollowers(userId: string) {
+    return apiClient.get<any[]>(`/social/followers/${userId}`);
   }
 
-  static async getFollowing(userId: number, page = 1, pageSize = 10) {
-    return apiClient.get<{
-      data: Follower[];
-      total: number;
-    }>(`/users/${userId}/following?page=${page}&pageSize=${pageSize}`);
-  }
-
-  // Leaderboard
-  static async getFollowerLeaderboard(page = 1, pageSize = 20) {
-    return apiClient.get<{
-      data: FollowerStats[];
-      total: number;
-    }>(`/leaderboard/followers?page=${page}&pageSize=${pageSize}`);
+  static async getFollowing(userId: string) {
+    return apiClient.get<any[]>(`/social/following/${userId}`);
   }
 
   // Activity Feed
-  static async getFollowingActivityFeed(
-    page = 1,
-    pageSize = 20,
-    type?: string,
-  ) {
-    const params = new URLSearchParams();
-    params.append('page', String(page));
-    params.append('pageSize', String(pageSize));
-    if (type) params.append('type', type);
-
-    return apiClient.get<{
-      data: Activity[];
-      total: number;
-    }>(`/feed/following?${params.toString()}`);
-  }
-
-  static async getGlobalActivityFeed(page = 1, pageSize = 20) {
-    return apiClient.get<{
-      data: Activity[];
-      total: number;
-    }>(`/feed/global?page=${page}&pageSize=${pageSize}`);
-  }
-
-  // User Discovery
-  static async searchUsers(
-    query: string,
-    minRating?: number,
-    page = 1,
-    pageSize = 20,
-  ) {
-    const params = new URLSearchParams();
-    params.append('query', query);
-    params.append('page', String(page));
-    params.append('pageSize', String(pageSize));
-    if (minRating) params.append('minRating', String(minRating));
-
-    return apiClient.get<{
-      data: User[];
-      total: number;
-    }>(`/users/search?${params.toString()}`);
-  }
-
-  static async getUserSuggestions() {
-    return apiClient.get<FollowSuggestion[]>('/users/suggestions');
-  }
-
-  static async dismissSuggestion(userId: number) {
-    return apiClient.post(`/users/suggestions/${userId}/dismiss`, {});
-  }
-
-  // Recommendations
-  static async getFollowRecommendations() {
-    return apiClient.get<FollowSuggestion[]>('/users/recommendations');
-  }
-
-  // Statistics
-  static async getFollowerStats(userId: number) {
-    return apiClient.get<{
-      current: number;
-      data: Array<{
-        date: string;
-        count: number;
-      }>;
-    }>(`/users/${userId}/stats/followers`);
-  }
-
-  static async getActivityStats(userId: number) {
-    return apiClient.get<{
-      totalActivities: number;
-      thisWeek: number;
-      engagement: number;
-    }>(`/users/${userId}/stats/activity`);
+  static async getActivityFeed() {
+    return apiClient.get<Activity[]>(`/social/feed`);
   }
 
   // Notifications
-  static async getFollowNotifications(page = 1, pageSize = 20) {
-    return apiClient.get(`/notifications/follow?page=${page}&pageSize=${pageSize}`);
+  static async getNotifications() {
+    return apiClient.get<Notification[]>(`/social/notifications`);
+  }
+
+  static async markNotificationAsRead(id: number) {
+    return apiClient.post(`/social/notifications/${id}/read`, {});
+  }
+
+  // Achievements
+  static async getAchievements(userId: string) {
+    return apiClient.get<Achievement[]>(`/social/achievements/${userId}`);
   }
 }
